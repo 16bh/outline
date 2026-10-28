@@ -1411,6 +1411,45 @@ describe("#documents.list", () => {
       expect(ids).toEqual([created.id]);
     });
 
+    it("should match documents last updated by a user", async () => {
+      const user = await buildUser();
+      const otherUser = await buildUser({ teamId: user.teamId });
+      const updated = await buildDocument({
+        userId: otherUser.id,
+        teamId: user.teamId,
+      });
+      updated.lastModifiedById = user.id;
+      await updated.save();
+      const notUpdated = await buildDocument({
+        userId: user.id,
+        teamId: user.teamId,
+      });
+      notUpdated.lastModifiedById = otherUser.id;
+      await notUpdated.save();
+
+      const res = await server.post("/api/documents.list", user, {
+        body: {
+          filters: [
+            { field: "lastModifiedById", operator: "eq", value: user.id },
+          ],
+        },
+      });
+      const body = await res.json();
+      expect(res.status).toEqual(200);
+      const ids = body.data.map((d: { id: string }) => d.id);
+      expect(ids).toEqual([updated.id]);
+    });
+
+    it("should reject unsupported operators for lastModifiedById", async () => {
+      const user = await buildUser();
+      const res = await server.post("/api/documents.list", user, {
+        body: {
+          filters: [{ field: "lastModifiedById", operator: "isNotNull" }],
+        },
+      });
+      expect(res.status).toEqual(400);
+    });
+
     it("should reject unsupported operators for createdById", async () => {
       const user = await buildUser();
       const res = await server.post("/api/documents.list", user, {

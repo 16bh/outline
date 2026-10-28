@@ -141,6 +141,22 @@ export default class DocumentsStore extends Store<Document> {
   );
 
   /**
+   * Documents last updated by the given user, most recently updated first.
+   *
+   * @param userId the ID of the user.
+   * @returns the matching documents.
+   */
+  updatedByUser = computedFn(
+    (userId: string): Document[] =>
+      orderBy(
+        this.all.filter((d) => d.updatedBy?.id === userId),
+        "updatedAt",
+        "desc"
+      ),
+    computedFnOptions
+  );
+
+  /**
    * Active documents in the given collection.
    *
    * @param collectionId the ID of the collection.

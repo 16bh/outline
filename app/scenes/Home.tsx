@@ -24,6 +24,7 @@ enum HomeTab {
   Viewed = "",
   Popular = "popular",
   Updated = "recent",
+  UpdatedBy = "updated-by-me",
   Created = "created",
 }
 
@@ -104,6 +105,13 @@ function Home() {
             >
               {t("Recently updated")}
             </Tab>
+            <Tab
+              to="/home/updated-by-me"
+              exact
+              onClick={() => setHomeTab(HomeTab.UpdatedBy)}
+            >
+              {t("Updated by me")}
+            </Tab>
             <Tab to="/home/created" onClick={() => setHomeTab(HomeTab.Created)}>
               {t("Created by me")}
             </Tab>
@@ -118,6 +126,26 @@ function Home() {
               documents={documents.recentlyUpdated}
               fetch={documents.fetchRecentlyUpdated}
               empty={<Empty>{t("Weird, this shouldn’t ever be empty")}</Empty>}
+              showCollection
+            />
+          </Route>
+          <Route path="/home/updated-by-me">
+            <PaginatedDocumentList
+              key="updated-by-me"
+              documents={documents.updatedByUser(userId)}
+              fetch={documents.fetchOwned}
+              options={{
+                filters: [
+                  {
+                    field: "lastModifiedById",
+                    operator: "eq",
+                    value: userId,
+                  },
+                ],
+              }}
+              empty={
+                <Empty>{t("You haven’t updated any documents yet")}</Empty>
+              }
               showCollection
             />
           </Route>
