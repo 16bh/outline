@@ -1,5 +1,6 @@
 import { observer } from "mobx-react";
 import { HomeIcon } from "outline-icons";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Switch, Route, Redirect, useRouteMatch } from "react-router-dom";
 import styled from "styled-components";
@@ -24,7 +25,7 @@ enum HomeTab {
   Viewed = "",
   Popular = "popular",
   Updated = "recent",
-  UpdatedBy = "updated-by-me",
+  Edited = "edited",
   Created = "created",
 }
 
@@ -33,6 +34,12 @@ function Home() {
   const user = useCurrentUser();
   const { t } = useTranslation();
   const userId = user?.id;
+  const editedOptions = useMemo(
+    () => ({
+      filters: [{ field: "userId", operator: "eq", value: userId }],
+    }),
+    [userId]
+  );
   const { pins, count } = usePinnedDocuments("home");
   const [homeTab, setHomeTab] = usePersistedState<HomeTab>(
     "home-tab",
@@ -106,11 +113,11 @@ function Home() {
               {t("Recently updated")}
             </Tab>
             <Tab
-              to="/home/updated-by-me"
+              to="/home/edited"
               exact
-              onClick={() => setHomeTab(HomeTab.UpdatedBy)}
+              onClick={() => setHomeTab(HomeTab.Edited)}
             >
-              {t("Updated by me")}
+              {t("Edited by me")}
             </Tab>
             <Tab to="/home/created" onClick={() => setHomeTab(HomeTab.Created)}>
               {t("Created by me")}
@@ -129,23 +136,13 @@ function Home() {
               showCollection
             />
           </Route>
-          <Route path="/home/updated-by-me">
+          <Route path="/home/edited">
             <PaginatedDocumentList
-              key="updated-by-me"
-              documents={documents.updatedByUser(userId)}
+              key="edited"
+              documents={documents.editedByUser(userId)}
               fetch={documents.fetchOwned}
-              options={{
-                filters: [
-                  {
-                    field: "lastModifiedById",
-                    operator: "eq",
-                    value: userId,
-                  },
-                ],
-              }}
-              empty={
-                <Empty>{t("You haven’t updated any documents yet")}</Empty>
-              }
+              options={editedOptions}
+              empty={<Empty>{t("You haven’t edited any documents yet")}</Empty>}
               showCollection
             />
           </Route>

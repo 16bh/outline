@@ -25,7 +25,6 @@ const documentFilterFields = {
   templateId: "uuid",
   collectionId: "uuid",
   createdById: { kind: "uuid", operators: ["eq", "in"] },
-  lastModifiedById: { kind: "uuid", operators: ["eq", "in"] },
   // `userId` maps to the collaboratorIds array column and only supports
   // membership checks.
   userId: { kind: "uuid", operators: ["eq", "in"] },
